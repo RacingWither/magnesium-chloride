@@ -1,0 +1,10 @@
+{
+  "item.magnesium_chloride.magnesium_chloride": "Magnesium Chloride",
+  "item.magnesium_chloride.magnesium": "Magnesium",
+  "item.magnesium_chloride.raw_magnesium": "Raw Magnesium",
+  "block.magnesium_chloride.magnesium_ore": "Magnesium Ore",
+  "itemGroup.magnesium_chloride": "Magnesium Chloride Things",
+  "block.magnesium_chloride.hcl_burner": "HCl Burner",
+  "block.magnesium_chloride.fluid_canister": "Fluid Canister",
+  "fluid_type.magnesium_chloride.hydrochloric_acid": "Hydrochloric Acid"
+}
