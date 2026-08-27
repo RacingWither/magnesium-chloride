@@ -9,13 +9,13 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.racingwither.magnesiumchloride.MagnesiumChlorideMod;
 
-public class HClBurnerBlockEntity extends BlockEntity{
+public class HClBurnerBlockEntity extends BlockEntity {
+
+    protected HClBurnerFluidHandler handler;
 
     public HClBurnerFluidHandler getHandler() {
         return handler;
     }
-
-    protected HClBurnerFluidHandler handler;
 
     private static final int INPUT_H2 = 0;
     private static final int INPUT_Cl2 = 1;

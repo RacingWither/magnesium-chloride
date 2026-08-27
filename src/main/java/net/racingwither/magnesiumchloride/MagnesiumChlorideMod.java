@@ -188,7 +188,7 @@ public class MagnesiumChlorideMod {
                     (blockEntity, side) ->  blockEntity.getHandler());
             event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, FLUID_CANISTER_BLOCK_ENTITY.get(),
                     (blockEntity, side) -> blockEntity.getTank());
-            event.registerItem(Capabilities.FluidHandler.ITEM, (itemStack, context) -> ((FluidCanisterItem) itemStack.getItem()).getFluidHandler(),
+            event.registerItem(Capabilities.FluidHandler.ITEM, (itemStack, context) -> ((FluidCanisterItem) itemStack.getItem()).getOrCreateFluidHandler(itemStack),
                     FLUID_CANISTER_ITEM);
         }
     }

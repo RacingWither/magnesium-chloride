@@ -16,6 +16,7 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -28,34 +29,37 @@ import java.util.List;
 
 public class FluidCanisterItem extends BlockItem {
 
-    private final FluidTankItem tank;
+    private FluidTankItem tank;
 
     public FluidCanisterItem(Block block, Item.Properties properties) {
         super(block, properties);
-        tank = new FluidTankItem(1000, this.getDefaultInstance());
     }
 
-    public IFluidHandlerItem getFluidHandler() {
+    public FluidTankItem getOrCreateFluidHandler(ItemStack container) {
+        if (this.tank == null) {
+            this.tank = new FluidTankItem(1000, container);
+        }
         return tank;
     }
 
     @Override
     public boolean isBarVisible(ItemStack stack) {
-        return !this.tank.isEmpty();
+        return !this.getOrCreateFluidHandler(stack).isEmpty();
     }
 
     @Override
     public int getBarColor(ItemStack stack) {
-        if (this.tank.getFluid().getFluidType() instanceof BaseFluidType base) return base.getTintColor();
-        if (this.tank.getFluid().is(Fluids.WATER)) return 0x3F76E4;
-        if (this.tank.getFluid().is(Fluids.LAVA)) return 0xFE432A;
+        FluidStack fluid = this.getOrCreateFluidHandler(stack).getFluid();
+        if (fluid.getFluidType() instanceof BaseFluidType base) return base.getTintColor();
+        if (fluid.is(Fluids.WATER)) return 0x3F76E4;
+        if (fluid.is(Fluids.LAVA)) return 0xFE432A;
         return 0xffffff;
 
     }
 
     @Override
     public int getBarWidth(ItemStack stack) {
-        return 10;
+        return 13;
     }
 
     @Override
