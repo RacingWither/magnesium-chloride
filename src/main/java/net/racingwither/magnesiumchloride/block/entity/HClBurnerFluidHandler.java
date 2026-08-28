@@ -12,7 +12,7 @@ import java.util.List;
 
 public class HClBurnerFluidHandler implements IFluidHandler {
 
-    private List<FluidTank> TANKS;
+    public List<FluidTank> TANKS;
 
     public HClBurnerFluidHandler() {
         TANKS = new ArrayList<>(List.of());
@@ -28,10 +28,7 @@ public class HClBurnerFluidHandler implements IFluidHandler {
 
                 @Override
                 public CompoundTag writeToNBT(HolderLookup.Provider lookupProvider, CompoundTag nbt) {
-                    if (!fluid.isEmpty()) {
-                        nbt.put("fluid:tank" + finalI, fluid.save(lookupProvider));
-                    }
-
+                    nbt.put("fluid:tank" + finalI, fluid.saveOptional(lookupProvider));
                     return nbt;
                 }
             });

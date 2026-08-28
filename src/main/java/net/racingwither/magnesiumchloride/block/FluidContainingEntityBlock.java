@@ -1,6 +1,7 @@
 package net.racingwither.magnesiumchloride.block;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ChunkResult;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -27,10 +28,7 @@ public abstract class FluidContainingEntityBlock extends BaseEntityBlock {
 
     @Override
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
-        boolean isClientSide = level.isClientSide;
-
-        if (stack.isEmpty())
-            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        boolean isClientSide = level.isClientSide();
 
         BlockEntity blockEntity = level.getBlockEntity(pos);
         if (blockEntity == null) return ItemInteractionResult.FAIL;
@@ -58,8 +56,10 @@ public abstract class FluidContainingEntityBlock extends BaseEntityBlock {
 
         boolean itemFull = existingItemFluid.getAmount() == itemCapability.getTankCapacity(0);
 
-        if ((existingItemFluid.isEmpty() && blockAllEmpty) || ((itemFull) && blockFull))
-            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        if ((existingItemFluid.isEmpty() && blockAllEmpty) || ((itemFull) && blockFull)) {
+            if (!isClientSide) level.playSound(null, pos, SoundEvents.BUCKET_FILL, SoundSource.BLOCKS);
+            return ItemInteractionResult.FAIL;
+        }
 
         else if (!itemFull) {
             ItemStack split = stack.copy();
