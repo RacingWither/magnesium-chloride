@@ -43,8 +43,8 @@ public abstract class FluidContainingEntityBlock extends BaseEntityBlock {
         for (int i = 0; i < blockCapability.getTanks(); i++) {
             existingBlockFluids.add(blockCapability.getFluidInTank(i).copy());
 
-            if (!blockCapability.getFluidInTank(i).isEmpty()) blockAllEmpty = false;
-            if (!(blockCapability.getFluidInTank(i).getAmount() == blockCapability.getTankCapacity(i))) blockFull = false;
+            if (!blockCapability.getFluidInTank(i).copy().isEmpty()) blockAllEmpty = false;
+            if (!(blockCapability.getFluidInTank(i).copy().getAmount() == blockCapability.getTankCapacity(i))) blockFull = false;
 
         }
 
@@ -57,7 +57,6 @@ public abstract class FluidContainingEntityBlock extends BaseEntityBlock {
         boolean itemFull = existingItemFluid.getAmount() == itemCapability.getTankCapacity(0);
 
         if ((existingItemFluid.isEmpty() && blockAllEmpty) || ((itemFull) && blockFull)) {
-            if (!isClientSide) level.playSound(null, pos, SoundEvents.BUCKET_FILL, SoundSource.BLOCKS);
             return ItemInteractionResult.FAIL;
         }
 
@@ -66,45 +65,43 @@ public abstract class FluidContainingEntityBlock extends BaseEntityBlock {
             split.setCount(1);
             IFluidHandlerItem splitCapability = split.getCapability(Capabilities.FluidHandler.ITEM);
             if (splitCapability != null) {
-                if (tryExecuteFill(blockCapability, splitCapability, 1000)) {
+                if (tryExecuteFill(blockCapability, splitCapability, 1000, isClientSide)) {
                     blockEntity.setChanged();
-
-                    ItemStack container = splitCapability.getContainer().copy();
-
-                    if (stack.getCount() == 1) {
-                        player.setItemInHand(hand, container);
-                    } else {
-                        stack.shrink(1);
-                        player.getInventory().placeItemBackInInventory(container);
-                    }
-
                     if (!isClientSide) {
+                        level.sendBlockUpdated(pos, state, state, 2);
+
+                        ItemStack container = splitCapability.getContainer().copy();
+
+                        if (stack.getCount() == 1) {
+                            player.setItemInHand(hand, container);
+                        } else {
+                            stack.shrink(1);
+                            player.getInventory().placeItemBackInInventory(container);
+                        }
                         level.playSound(null, pos, SoundEvents.BUCKET_FILL, SoundSource.BLOCKS);
                     }
                     return ItemInteractionResult.sidedSuccess(isClientSide);
                 }
                 return ItemInteractionResult.FAIL;
             }
-            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            return ItemInteractionResult.FAIL;
 
-        } else if (!blockFull) {
-            if (tryExecuteFill(itemCapability, blockCapability, 1000)) {
+        } else {
+            if (tryExecuteFill(itemCapability, blockCapability, 1000, isClientSide)) {
                 blockEntity.setChanged();
-
-                ItemStack container = itemCapability.getContainer();
-                player.setItemInHand(hand, container);
-
                 if (!isClientSide) {
+                    level.sendBlockUpdated(pos, state, state, 2);
+                    ItemStack container = itemCapability.getContainer();
+                    player.setItemInHand(hand, container);
                     level.playSound(null, pos, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS);
                 }
                 return ItemInteractionResult.sidedSuccess(isClientSide);
             }
-            return ItemInteractionResult.FAIL;
-
-        } else return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            return ItemInteractionResult.CONSUME;
+        }
     }
 
-    private static boolean tryExecuteFill(IFluidHandler source, IFluidHandler target, int maxAmount) {
+    private static boolean tryExecuteFill(IFluidHandler source, IFluidHandler target, int maxAmount, boolean isClientSide) {
         FluidStack simDrain = source.drain(maxAmount, IFluidHandler.FluidAction.SIMULATE);
         int drainAmount = simDrain.getAmount();
         if (simDrain.isEmpty()) return false;
@@ -112,6 +109,7 @@ public abstract class FluidContainingEntityBlock extends BaseEntityBlock {
         int fillAmount = target.fill(simDrain, IFluidHandler.FluidAction.SIMULATE);
         if (fillAmount == 0) return false;
 
+        if (isClientSide) return true;
         int transferAmount = Math.min(drainAmount, fillAmount);
         FluidStack exDrain = source.drain(transferAmount, IFluidHandler.FluidAction.EXECUTE);
         target.fill(exDrain, IFluidHandler.FluidAction.EXECUTE);

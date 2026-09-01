@@ -63,7 +63,7 @@ public class HClBurnerFluidHandler implements IFluidHandler {
     public int fill(FluidStack resource, FluidAction action) {
 
         for (FluidTank tank : TANKS.subList(0, 2)) {
-            if (!tank.isEmpty() && FluidStack.isSameFluidSameComponents(tank.getFluid(), resource)) return tank.fill(resource, action);
+            if (!tank.isEmpty() && FluidStack.isSameFluidSameComponents(tank.getFluid(), resource) && (tank.getCapacity() != tank.getFluid().getAmount())) return tank.fill(resource, action);
         }
         for (FluidTank tank : TANKS.subList(0, 2)) {
             if (tank.isEmpty()) return tank.fill(resource, action);
