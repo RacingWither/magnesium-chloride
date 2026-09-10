@@ -3,6 +3,7 @@ package net.racingwither.magnesiumchloride.block.entity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -10,8 +11,17 @@ import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.Fluids;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.FluidType;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import net.racingwither.magnesiumchloride.MagnesiumChlorideMod;
+import net.racingwither.magnesiumchloride.fluid.MCFluids;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class HClBurnerBlockEntity extends BlockEntity {
 
@@ -85,7 +95,26 @@ public class HClBurnerBlockEntity extends BlockEntity {
     }
 
     public void tick(Level level, BlockPos blockPos, BlockState blockState) {
-
+        if (handler != null) {
+            FluidStack tank0 = handler.getFluidInTank(0);
+            FluidStack tank1 = handler.getFluidInTank(1);
+            FluidStack tank2 = handler.getFluidInTank(2);
+            if (tank2.getAmount() < handler.getTankCapacity(2) && tank0.getAmount() >= 500 && tank1.getAmount() >= 500) {
+                FluidTank inputTank = handler.getTank(0);
+                FluidTank inputTank1 = handler.getTank(1);
+                FluidTank outputTank = handler.getTank(2);
+                List<FluidType> contents = new ArrayList<>(List.of(inputTank.getFluid().getFluidType(), inputTank1.getFluid().getFluidType()));
+                if (contents.contains(Fluids.WATER.getFluidType()) && contents.contains(Fluids.LAVA.getFluidType())) {
+                    int filledAmount = outputTank.fill(new FluidStack(MCFluids.SOURCE_HYDROCHLORIC_ACID.get(), 1000), IFluidHandler.FluidAction.EXECUTE);
+                    inputTank.drain(filledAmount / 2, IFluidHandler.FluidAction.EXECUTE);
+                    inputTank1.drain(filledAmount / 2, IFluidHandler.FluidAction.EXECUTE);
+                    this.setChanged();
+                    if (!level.isClientSide()) {
+                        level.sendBlockUpdated(blockPos, blockState, blockState, 2);
+                    }
+                }
+            }
+        }
     }
 
     @Override

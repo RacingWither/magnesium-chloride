@@ -17,6 +17,8 @@ import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.IFluidHandlerItem;
+import net.racingwither.magnesiumchloride.MagnesiumChlorideMod;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,7 +46,8 @@ public abstract class FluidContainingEntityBlock extends BaseEntityBlock {
             existingBlockFluids.add(blockCapability.getFluidInTank(i).copy());
 
             if (!blockCapability.getFluidInTank(i).copy().isEmpty()) blockAllEmpty = false;
-            if (!(blockCapability.getFluidInTank(i).copy().getAmount() == blockCapability.getTankCapacity(i))) blockFull = false;
+            if (!(blockCapability.getFluidInTank(i).copy().getAmount() == blockCapability.getTankCapacity(i)))
+                blockFull = false;
 
         }
 
@@ -60,45 +63,62 @@ public abstract class FluidContainingEntityBlock extends BaseEntityBlock {
             return ItemInteractionResult.FAIL;
         }
 
-        else if (!itemFull) {
-            ItemStack split = stack.copy();
-            split.setCount(1);
-            IFluidHandlerItem splitCapability = split.getCapability(Capabilities.FluidHandler.ITEM);
-            if (splitCapability != null) {
-                if (tryExecuteFill(blockCapability, splitCapability, 1000, isClientSide)) {
-                    blockEntity.setChanged();
-                    if (!isClientSide) {
-                        level.sendBlockUpdated(pos, state, state, 2);
+        if (!itemFull) {
+            ItemInteractionResult result = fillItemFromBlock(stack, state, level, pos, player, hand, blockCapability);
+            if (result != null) return result;
+        }
 
-                        ItemStack container = splitCapability.getContainer().copy();
+        if (!blockFull) {
+            ItemInteractionResult result = fillBlockFromItem(state, level, pos, player, itemCapability, blockCapability);
+            if (result != null) return result;
+        }
 
-                        if (stack.getCount() == 1) {
-                            player.setItemInHand(hand, container);
-                        } else {
-                            stack.shrink(1);
-                            player.getInventory().placeItemBackInInventory(container);
-                        }
-                        level.playSound(null, pos, SoundEvents.BUCKET_FILL, SoundSource.BLOCKS);
-                    }
-                    return ItemInteractionResult.sidedSuccess(isClientSide);
-                }
-                return ItemInteractionResult.FAIL;
-            }
-            return ItemInteractionResult.FAIL;
+        if (player.isCrouching()) return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        return ItemInteractionResult.FAIL;
+    }
 
-        } else {
-            if (tryExecuteFill(itemCapability, blockCapability, 1000, isClientSide)) {
+    public static @Nullable ItemInteractionResult fillItemFromBlock(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, IFluidHandler blockCapability) {
+        boolean isClientSide = level.isClientSide();
+        BlockEntity blockEntity = level.getBlockEntity(pos);
+        ItemStack split = stack.copy();
+        split.setCount(1);
+        IFluidHandlerItem splitCapability = split.getCapability(Capabilities.FluidHandler.ITEM);
+        if (splitCapability != null) {
+            if (tryExecuteFill(blockCapability, splitCapability, 1000, isClientSide)) {
                 blockEntity.setChanged();
                 if (!isClientSide) {
                     level.sendBlockUpdated(pos, state, state, 2);
-                    ItemStack container = itemCapability.getContainer();
-                    player.setItemInHand(hand, container);
-                    level.playSound(null, pos, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS);
+
+                    ItemStack container = splitCapability.getContainer().copy();
+
+                    if (stack.getCount() == 1) {
+                        player.setItemInHand(hand, container);
+                    } else {
+                        stack.shrink(1);
+                        player.getInventory().placeItemBackInInventory(container);
+                    }
+                    level.playSound(null, pos, SoundEvents.BUCKET_FILL, SoundSource.BLOCKS);
                 }
                 return ItemInteractionResult.sidedSuccess(isClientSide);
             }
-            return ItemInteractionResult.CONSUME;
+        } else return ItemInteractionResult.FAIL;
+        return null;
+    }
+
+    public static @Nullable ItemInteractionResult fillBlockFromItem(BlockState state, Level level, BlockPos pos, Player player, IFluidHandlerItem itemCapability, IFluidHandler blockCapability) {
+        boolean isClientSide = level.isClientSide();
+        BlockEntity blockEntity = level.getBlockEntity(pos);
+        if (tryExecuteFill(itemCapability, blockCapability, 1000, isClientSide)) {
+            blockEntity.setChanged();
+            if (!isClientSide) {
+                level.sendBlockUpdated(pos, state, state, 2);
+                ItemStack container = itemCapability.getContainer();
+                player.setItemInHand(InteractionHand.MAIN_HAND, container);
+                level.playSound(null, pos, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS);
+            }
+            return ItemInteractionResult.sidedSuccess(isClientSide);
         }
+        return null;
     }
 
     private static boolean tryExecuteFill(IFluidHandler source, IFluidHandler target, int maxAmount, boolean isClientSide) {

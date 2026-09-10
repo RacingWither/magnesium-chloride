@@ -6,6 +6,7 @@ import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
+import net.racingwither.magnesiumchloride.fluid.ModifiedFluidTank;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,16 +20,16 @@ public class HClBurnerFluidHandler implements IFluidHandler {
 
         for (int i = 0; i < 3; i++) {
             int finalI = i;
-            TANKS.add(new FluidTank(8000) {
+            TANKS.add(new ModifiedFluidTank(8000) {
                 @Override
                 public FluidTank readFromNBT(HolderLookup.Provider lookupProvider, CompoundTag nbt) {
-                    fluid = FluidStack.parseOptional(lookupProvider, nbt.getCompound("fluid:tank" + finalI));
+                    fluid = FluidStack.parseOptional(lookupProvider, nbt.getCompound("fluid:fluid" + finalI));
                     return this;
                 }
 
                 @Override
                 public CompoundTag writeToNBT(HolderLookup.Provider lookupProvider, CompoundTag nbt) {
-                    nbt.put("fluid:tank" + finalI, fluid.saveOptional(lookupProvider));
+                    nbt.put("fluid:fluid" + finalI, fluid.saveOptional(lookupProvider));
                     return nbt;
                 }
             });
@@ -85,5 +86,9 @@ public class HClBurnerFluidHandler implements IFluidHandler {
             if (!tank.isEmpty()) return tank.drain(maxDrain, action);
         }
         return FluidStack.EMPTY;
+    }
+
+    protected FluidTank getTank(int tank) {
+        return TANKS.get(tank);
     }
 }

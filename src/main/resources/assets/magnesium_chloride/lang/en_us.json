@@ -6,5 +6,8 @@
   "itemGroup.magnesium_chloride": "Magnesium Chloride Things",
   "block.magnesium_chloride.hcl_burner": "HCl Burner",
   "block.magnesium_chloride.fluid_canister": "Fluid Canister",
-  "fluid_type.magnesium_chloride.hydrochloric_acid": "Hydrochloric Acid"
+  "fluid_type.magnesium_chloride.hydrochloric_acid": "Hydrochloric Acid",
+  "fluid_type.magnesium_chloride.chlorine_gas": "Chlorine Gas",
+  "block.magnesium_chloride.hydrochloric_acid": "Hydrochloric Acid",
+  "item.magnesium_chloride.acid_bucket": "Hydrochloric Acid Bucket"
 }

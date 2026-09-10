@@ -1,10 +1,19 @@
 package net.racingwither.magnesiumchloride;
 
 import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.arguments.StringArgumentType;
+import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.ResourceKeyArgument;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
@@ -15,7 +24,11 @@ import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.registries.DeferredRegister;
 import net.racingwither.magnesiumchloride.block.entity.HClBurnerFluidHandler;
+import net.racingwither.magnesiumchloride.component.FluidStorageComponent;
+import net.racingwither.magnesiumchloride.fluid.MCFluids;
+import net.racingwither.magnesiumchloride.item.FluidTankItem;
 
 @EventBusSubscriber
 public class MCCommands {
@@ -28,7 +41,7 @@ public class MCCommands {
                                         .then(
                                                 Commands.argument("pos", BlockPosArgument.blockPos())
                                                         .then(
-                                                                Commands.argument("tank", IntegerArgumentType.integer(0))
+                                                                Commands.argument("fluid", IntegerArgumentType.integer(0))
                                                                         .then(
                                                                                 Commands.argument("amount", IntegerArgumentType.integer(0, 8000))
                                                                                         .executes(context -> {
@@ -37,7 +50,7 @@ public class MCCommands {
                                                                                             BlockEntity be = level.getBlockEntity(pos);
                                                                                             IFluidHandler cap = level.getCapability(Capabilities.FluidHandler.BLOCK, pos, null);
                                                                                             if (cap != null) {
-                                                                                                int tank = IntegerArgumentType.getInteger(context, "tank");
+                                                                                                int tank = IntegerArgumentType.getInteger(context, "fluid");
                                                                                                 if (tank <= cap.getTanks() && cap instanceof HClBurnerFluidHandler hand) {
                                                                                                     hand.TANKS.get(tank).fill(new FluidStack(
                                                                                                             Fluids.WATER,
@@ -45,7 +58,24 @@ public class MCCommands {
                                                                                                             IFluidHandler.FluidAction.EXECUTE);}}
                                                                                             return 1;
                                                                                         })
-                                                                        ))
+                                                                        )
+                                                        )
+                                        )
+                        ).then(
+                                Commands.literal("canister")
+                                        .then(
+                                                Commands.literal("chlorine")
+                                                        .executes(context -> {
+                                                                    CommandSourceStack source = context.getSource();
+                                                                    Player player = source.getPlayer();
+                                                                    ItemStack stack = new ItemStack(MagnesiumChlorideMod.FLUID_CANISTER);
+                                                                    stack.update(MagnesiumChlorideMod.FLUID_STORAGE_COMPONENT, FluidStorageComponent.FluidStorageRecord.CANISTER_DEFAULT, record -> record.setValue(new FluidStack(MCFluids.SOURCE_CHLORINE_GAS, 4000)));
+                                                                    player.addItem(stack);
+                                                                    context.getSource().sendSystemMessage(Component.literal("Gave a fluid canister to " + player.getName()));
+                                                                    return 1;
+                                                                }
+                                                        )
+
                                         )
                         )
         );

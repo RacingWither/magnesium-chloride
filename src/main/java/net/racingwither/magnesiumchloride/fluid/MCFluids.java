@@ -22,17 +22,29 @@ public class MCFluids {
             "flowing_hydrochloric_acid", () -> new BaseFlowingFluid.Flowing(MCFluids.HYDROCHLORIC_ACID_PROPERTIES)
     );
 
-    public static final DeferredHolder<Fluid, GasFluid> HYDROGEN_GAS = FLUIDS.register(
-            "hydrogen_gas", () -> new GasFluid(MCFluidTypes.HYDROGEN_GAS_TYPE)
+    public static final DeferredHolder<Fluid, BaseFlowingFluid.Source> SOURCE_HYDROGEN_GAS = FLUIDS.register(
+            "source_hydrogen_gas", () -> new BaseFlowingFluid.Source(MCFluids.HYDROGEN_GAS_PROPERTIES)
+    );
+    public static final DeferredHolder<Fluid, BaseFlowingFluid.Flowing> FLOWING_HYDROGEN_GAS = FLUIDS.register(
+            "flowing_hydrogen_gas", () -> new BaseFlowingFluid.Flowing(MCFluids.HYDROGEN_GAS_PROPERTIES)
     );
 
-    public static final DeferredHolder<Fluid, GasFluid> CHLORINE_GAS = FLUIDS.register(
-            "chlorine_gas", () -> new GasFluid(MCFluidTypes.CHLORINE_GAS_TYPE)
+    public static final DeferredHolder<Fluid, BaseFlowingFluid.Source> SOURCE_CHLORINE_GAS = FLUIDS.register(
+            "source_chlorine_gas", () -> new BaseFlowingFluid.Source(MCFluids.CHLORINE_GAS_PROPERTIES)
+    );
+    public static final DeferredHolder<Fluid, BaseFlowingFluid.Flowing> FLOWING_CHLORINE_GAS = FLUIDS.register(
+            "flowing_chlorine_gas", () -> new BaseFlowingFluid.Flowing(MCFluids.CHLORINE_GAS_PROPERTIES)
     );
 
     public static final BaseFlowingFluid.Properties HYDROCHLORIC_ACID_PROPERTIES = new BaseFlowingFluid.Properties(
         MCFluidTypes.HYDROCHLORIC_ACID_TYPE, SOURCE_HYDROCHLORIC_ACID, FLOWING_HYDROCHLORIC_ACID)
             .slopeFindDistance(6).levelDecreasePerBlock(1).block(MagnesiumChlorideMod.HYDROCHLORIC_ACID).bucket(MagnesiumChlorideMod.ACID_BUCKET);
+
+    public static final BaseFlowingFluid.Properties HYDROGEN_GAS_PROPERTIES = new BaseFlowingFluid.Properties(
+            MCFluidTypes.HYDROGEN_GAS_TYPE, SOURCE_HYDROGEN_GAS, FLOWING_HYDROGEN_GAS);
+
+    public static final BaseFlowingFluid.Properties CHLORINE_GAS_PROPERTIES = new BaseFlowingFluid.Properties(
+            MCFluidTypes.CHLORINE_GAS_TYPE, SOURCE_CHLORINE_GAS, FLOWING_CHLORINE_GAS);
 
     public static void register(IEventBus eventBus) {
         FLUIDS.register(eventBus);

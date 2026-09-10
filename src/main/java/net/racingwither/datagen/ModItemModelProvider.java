@@ -16,6 +16,6 @@ public class ModItemModelProvider extends ItemModelProvider {
         basicItem(MagnesiumChlorideMod.MAGNESIUM_CHLORIDE.get());
         basicItem(MagnesiumChlorideMod.RAW_MAGNESIUM.get());
         basicItem(MagnesiumChlorideMod.MAGNESIUM.get());
-        basicItem(MagnesiumChlorideMod.ACID_BUCKET.get());
+
     }
 }

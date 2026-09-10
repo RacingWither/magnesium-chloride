@@ -7,15 +7,18 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.*;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.PushReaction;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -26,20 +29,23 @@ import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
+import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.fluids.DispenseFluidContainer;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.IFluidHandlerItem;
-import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.racingwither.magnesiumchloride.block.FluidCanisterBlock;
+import net.racingwither.magnesiumchloride.block.FluidContainingEntityBlock;
 import net.racingwither.magnesiumchloride.block.HClBurnerBlock;
 import net.racingwither.magnesiumchloride.block.HydrochloricAcidBlock;
 import net.racingwither.magnesiumchloride.block.entity.FluidCanisterBlockEntity;
 import net.racingwither.magnesiumchloride.block.entity.HClBurnerBlockEntity;
+import net.racingwither.magnesiumchloride.component.FluidStorageComponent;
 import net.racingwither.magnesiumchloride.fluid.BaseFluidType;
 import net.racingwither.magnesiumchloride.fluid.MCFluidTypes;
 import net.racingwither.magnesiumchloride.fluid.MCFluids;
 import net.racingwither.magnesiumchloride.item.FluidCanisterItem;
-import net.racingwither.magnesiumchloride.item.FluidTankItem;
 import org.joml.Vector3f;
 import org.slf4j.Logger;
 
@@ -65,11 +71,19 @@ public class MagnesiumChlorideMod {
     public static final String MOD_ID = "magnesium_chloride";
     public static final Logger LOGGER = LogUtils.getLogger();
 
+
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MOD_ID);
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(MOD_ID);
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES = DeferredRegister.create(
             BuiltInRegistries.BLOCK_ENTITY_TYPE, MOD_ID);
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MOD_ID);
+    public static final DeferredRegister.DataComponents DATA_COMPONENTS = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, MOD_ID);
+
+
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<FluidStorageComponent.FluidStorageRecord>> FLUID_STORAGE_COMPONENT = DATA_COMPONENTS.registerComponentType(
+            "fluid_storage",
+            builder -> builder.persistent(FluidStorageComponent.CODEC)
+    );
 
     public static final DeferredBlock<Block> MAGNESIUM_ORE = BLOCKS.register("magnesium_ore", () -> new Block(BlockBehaviour.Properties.of()
             .destroyTime(1.5f)
@@ -96,11 +110,14 @@ public class MagnesiumChlorideMod {
     public static final DeferredItem<BucketItem> ACID_BUCKET = ITEMS.register("acid_bucket",
             () -> new BucketItem(MCFluids.SOURCE_HYDROCHLORIC_ACID.get(), new Item.Properties().stacksTo(1).craftRemainder(Items.BUCKET)));
     public static final DeferredItem<FluidCanisterItem> FLUID_CANISTER_ITEM = ITEMS.register("fluid_canister",
-            () -> new FluidCanisterItem(FLUID_CANISTER.get(), new Item.Properties()));
+            () -> new FluidCanisterItem(FLUID_CANISTER.get(), new Item.Properties()
+                    .component(FLUID_STORAGE_COMPONENT.get(), FluidStorageComponent.FluidStorageRecord.CANISTER_DEFAULT)
+            ));
 
     public static final Supplier<BlockEntityType<HClBurnerBlockEntity>> HCL_BURNER_BLOCK_ENTITY = BLOCK_ENTITY_TYPES.register(
             "hcl_burner_block_entity", () -> new BlockEntityType<>(HClBurnerBlockEntity::new,
                     Set.of(HCL_BURNER.get()), null));
+
     public static final Supplier<BlockEntityType<FluidCanisterBlockEntity>> FLUID_CANISTER_BLOCK_ENTITY = BLOCK_ENTITY_TYPES.register(
             "fluid_canister_block_entity", () -> BlockEntityType.Builder.of(FluidCanisterBlockEntity::new,
                     FLUID_CANISTER.get()).build(null));
@@ -119,11 +136,13 @@ public class MagnesiumChlorideMod {
                 output.accept(FLUID_CANISTER_ITEM.get());
             }).build());
 
+
     public MagnesiumChlorideMod(IEventBus modEventBus, ModContainer modContainer) {
         ITEMS.register(modEventBus);
         BLOCKS.register(modEventBus);
         BLOCK_ENTITY_TYPES.register(modEventBus);
         CREATIVE_MODE_TABS.register(modEventBus);
+        DATA_COMPONENTS.register(modEventBus);
         MCFluids.register(modEventBus);
         MCFluidTypes.register(modEventBus);
 
@@ -170,6 +189,19 @@ public class MagnesiumChlorideMod {
                     RenderSystem.setShaderFogEnd(6f);
                 }
             }, hydrochloric_acid);
+
+            BaseFluidType chlorine_gas = MCFluidTypes.CHLORINE_GAS_TYPE.get();
+            event.registerFluidType(new IClientFluidTypeExtensions() {
+                @Override
+                public int getTintColor() {
+                    return chlorine_gas.getTintColor();
+                }
+
+                @Override
+                public ResourceLocation getStillTexture() {
+                    return chlorine_gas.getStillTexture();
+                }
+            }, chlorine_gas);
         }
     }
 
@@ -188,8 +220,35 @@ public class MagnesiumChlorideMod {
                     (blockEntity, side) ->  blockEntity.getHandler());
             event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, FLUID_CANISTER_BLOCK_ENTITY.get(),
                     (blockEntity, side) -> blockEntity.getTank());
-            event.registerItem(Capabilities.FluidHandler.ITEM, (itemStack, context) -> ((FluidCanisterItem) itemStack.getItem()).getOrCreateFluidHandler(itemStack),
+            event.registerItem(Capabilities.FluidHandler.ITEM, (itemStack, context) -> ((FluidCanisterItem) itemStack.getItem()).getFluidHandler(itemStack),
                     FLUID_CANISTER_ITEM);
+        }
+
+        @SubscribeEvent
+        public static void addItemsToCreativeTabs(BuildCreativeModeTabContentsEvent event) {
+            if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
+                event.insertAfter(Items.MILK_BUCKET.getDefaultInstance(), ACID_BUCKET.get().getDefaultInstance(), CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
+            }
+        }
+
+        @SubscribeEvent
+        public static void transferFluidOnAttack(PlayerInteractEvent.LeftClickBlock event) {
+            if (event.getAction() == PlayerInteractEvent.LeftClickBlock.Action.START) {
+                ItemStack stack = event.getItemStack();
+                Level level = event.getLevel();
+                BlockState state = level.getBlockState(event.getPos());
+                IFluidHandler blockCapability = level.getCapability(Capabilities.FluidHandler.BLOCK, event.getPos(), null);
+                IFluidHandlerItem itemCapability = stack.getCapability(Capabilities.FluidHandler.ITEM);
+                if (stack.is(MagnesiumChlorideMod.FLUID_CANISTER_ITEM) && stack.getItem() instanceof FluidCanisterItem item && blockCapability != null && itemCapability != null && !event.getEntity().isCrouching()) {
+                    long used = item.lastUsed;
+                    long time = level.getGameTime();
+                    if (time - used >= 3) {
+                        FluidContainingEntityBlock.fillBlockFromItem(state, level, event.getPos(), event.getEntity(), itemCapability, blockCapability);
+                        if (!level.isClientSide()) item.lastUsed = time;
+                    }
+                    event.setCanceled(true);
+                }
+            }
         }
     }
 }

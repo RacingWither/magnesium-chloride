@@ -29,12 +29,24 @@ public class MCFluidTypes {
             )
     );
 
-    public static final DeferredHolder<FluidType, FluidType> HYDROGEN_GAS_TYPE = FLUID_TYPES.register(
-            "hydrogen_gas", () -> new FluidType(FluidType.Properties.create())
+    public static final DeferredHolder<FluidType, BaseFluidType> HYDROGEN_GAS_TYPE = FLUID_TYPES.register(
+            "hydrogen_gas", () -> new BaseFluidType(
+                    STILL_HYDROCHLORIC_ACID_LOCATION,
+                    FLOWING_HYDROCHLORIC_ACID_LOCATION,
+                    0x05000000,
+                    new Vector3f(0.5f, 0.5f, 0.5f),
+                    FluidType.Properties.create()
+            )
     );
 
-    public static final DeferredHolder<FluidType, FluidType> CHLORINE_GAS_TYPE = FLUID_TYPES.register(
-            "chlorine_gas", () -> new FluidType(FluidType.Properties.create())
+    public static final DeferredHolder<FluidType, BaseFluidType> CHLORINE_GAS_TYPE = FLUID_TYPES.register(
+            "chlorine_gas", () -> new BaseFluidType(
+                    STILL_HYDROCHLORIC_ACID_LOCATION,
+                    FLOWING_HYDROCHLORIC_ACID_LOCATION,
+                    0x80c3e81e,
+                    new Vector3f(0.5f, 0.5f, 0.5f),
+                    FluidType.Properties.create()
+            )
     );
 
     public static void register(IEventBus eventBus) {
