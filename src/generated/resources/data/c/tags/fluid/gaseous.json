@@ -1,0 +1,8 @@
+{
+  "values": [
+    "magnesium_chloride:source_chlorine_gas",
+    "magnesium_chloride:flowing_chlorine_gas",
+    "magnesium_chloride:source_hydrogen_gas",
+    "magnesium_chloride:flowing_hydrogen_gas"
+  ]
+}

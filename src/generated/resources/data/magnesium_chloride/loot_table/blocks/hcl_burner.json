@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "bonus_rolls": 0.0,
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "magnesium_chloride:hcl_burner"
+        }
+      ],
+      "rolls": 1.0
+    }
+  ],
+  "random_sequence": "magnesium_chloride:blocks/hcl_burner"
+}

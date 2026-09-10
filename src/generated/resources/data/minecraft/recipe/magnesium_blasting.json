@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:blasting",
+  "category": "misc",
+  "cookingtime": 100,
+  "experience": 0.1,
+  "ingredient": {
+    "item": "magnesium_chloride:raw_magnesium"
+  },
+  "result": {
+    "count": 1,
+    "id": "magnesium_chloride:magnesium"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "magnesium_chloride:block/magnesium_ore"
+  }
+}

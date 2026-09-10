@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:block",
+  "functions": [
+    {
+      "function": "minecraft:copy_components",
+      "source": "block_entity"
+    }
+  ],
+  "pools": [
+    {
+      "bonus_rolls": 0.0,
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "magnesium_chloride:fluid_canister"
+        }
+      ],
+      "rolls": 1.0
+    }
+  ],
+  "random_sequence": "magnesium_chloride:blocks/fluid_canister"
+}

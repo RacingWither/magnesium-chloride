@@ -85,7 +85,6 @@ public class FluidCanisterItem extends BlockItem {
     }
 
 
-
     public static void onFluidChange(FluidTankItem tank, ItemStack stack) {
         if (!stack.is(MagnesiumChlorideMod.FLUID_CANISTER_ITEM)) return;
         FluidStack fluid = tank.getFluid();

@@ -1,0 +1,55 @@
+{
+	"format_version": "1.9.0",
+	"credit": "Made with Blockbench",
+	"parent": "block/block",
+	"texture_size": [64, 64],
+    "render_type": "minecraft:cutout",
+	"textures": {
+		"side": "magnesium_chloride:block/fluid_canister_side",
+        "top": "magnesium_chloride:block/fluid_canister_top",
+        "bottom": "magnesium_chloride:block/fluid_canister_bottom",
+        "upper_north": "magnesium_chloride:block/fluid_canister_upper_north",
+        "upper_east": "magnesium_chloride:block/fluid_canister_upper_east",
+        "upper_south": "magnesium_chloride:block/fluid_canister_upper_south",
+        "upper_west": "magnesium_chloride:block/fluid_canister_upper_west",
+        "particle": "magnesium_chloride:block/fluid_canister_side"
+	},
+	"elements": [
+		{
+			"from": [1, 0, 1],
+			"to": [15, 16, 15],
+			"rotation": {"angle": 0, "axis": "y", "origin": [7, 0, 7]},
+			"faces": {
+				"north": {"uv": [0, 0, 16, 16], "texture": "#side"},
+				"east": {"uv": [0, 0, 16, 16], "texture": "#side"},
+				"south": {"uv": [0, 0, 16, 16], "texture": "#side"},
+				"west": {"uv": [0, 0, 16, 16], "texture": "#side"},
+				"up": {"uv": [0, 0, 16, 16], "texture": "#top"},
+				"down": {"uv": [0, 0, 16, 16], "texture": "#bottom"}
+			}
+		},
+		{
+			"from": [4, 16, 4],
+			"to": [12, 19, 12],
+			"rotation": {"angle": 0, "axis": "y", "origin": [7, 18, 7]},
+			"faces": {
+				"north": {"uv": [0, 0, 16, 16], "texture": "#upper_north"},
+				"east": {"uv": [0, 0, 16, 16], "texture": "#upper_east"},
+				"south": {"uv": [0, 0, 16, 16], "texture": "#upper_south"},
+				"west": {"uv": [0, 0, 16, 16], "texture": "#upper_west"}
+			}
+		},
+		{
+			"from": [12, 19, 12],
+			"to": [4, 16, 4],
+			"rotation": {"angle": 0, "axis": "y", "origin": [9, 21, 8]},
+			"faces": {
+				"north": {"uv": [0, 16, 16, 0], "texture": "#upper_south"},
+				"east": {"uv": [0, 16, 16, 0], "texture": "#upper_west"},
+				"south": {"uv": [0, 16, 16, 0], "texture": "#upper_north"},
+				"west": {"uv": [0, 16, 16, 0], "texture": "#upper_east"}
+			}
+		}
+	],
+	"display": {}
+}
